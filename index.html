@@ -10,8 +10,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InvoiceForge — Premium Professional Invoice Builder</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Core Engines -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <style>
@@ -64,11 +65,13 @@
     .header-btn-group { display: flex; gap: 8px; }
 
     /* ─── LAYOUT ─── */
-    .app-layout { display: grid; grid-template-columns: 800px 1fr; height: calc(100vh - 65px); transition: all 0.5s var(--ease); }
-    .app-layout.focus-mode { grid-template-columns: 0px 1fr; }
-    .sidebar { background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 24px; z-index: 50; }
-    .sidebar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .sidebar-full { grid-column: span 2; }
+    .app-layout { display: flex; flex-direction: column; min-height: calc(100vh - 72px); background: var(--surface); width: 100%; }
+    .sidebar { width: 100%; background: var(--surface); border-bottom: 1px solid var(--border); overflow-y: visible; position: relative; z-index: 10; }
+    .sidebar-inner { padding: 40px; display: flex; flex-direction: column; gap: 40px; width: 50%; max-width: 1200px; margin: 0 auto; transition: width 0.3s var(--ease); }
+    @media (max-width: 1280px) { .sidebar-inner { width: 70%; } }
+    @media (max-width: 1024px) { .sidebar-inner { width: 90%; } }
+    @media (max-width: 640px) { .sidebar-inner { width: 100%; padding: 24px; } }
+    .preview-area { width: 100%; min-height: 800px; padding: 60px 0; background: #0a0a0a; flex: 1; display: flex; justify-content: center; position: relative; }
     .sidebar::-webkit-scrollbar { width: 5px; }
     .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     
@@ -83,14 +86,14 @@
     .tab:hover:not(.active) { color: var(--text-2); background: hsla(0,0%,100%,0.03); }
 
     /* ─── SECTIONS ─── */
-    .section { display: flex; flex-direction: column; gap: 24px; padding: 4px 0; }
-    .section-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px; cursor: pointer; user-select: none; border-bottom: 1px solid var(--border); }
-    .section-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-3); display: flex; align-items: center; gap: 12px; }
-    .section-title-icon { font-size: 14px; filter: grayscale(1) brightness(1.5); }
-    .section-toggle { color: var(--text-3); font-size: 10px; transition: 0.4s var(--ease); }
-    .section-toggle.open { transform: rotate(180deg); color: var(--accent); }
-    .section-body { display: flex; flex-direction: column; gap: 20px; padding-top: 8px; }
-    .section-body.collapsed { display: none; }
+    .section { background: var(--surface-2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; transition: border-color 0.3s; }
+    .section:hover { border-color: var(--accent); }
+    .section-header { padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: rgba(255,255,255,0.02); }
+    .section-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; }
+    .section-body { padding: 0 24px 24px; display: block; overflow: hidden; }
+    .section.collapsed .section-body { display: none; }
+    .section-toggle { font-size: 10px; transition: transform 0.4s var(--ease); opacity: 0.5; color: var(--accent); }
+    .section.collapsed .section-toggle { transform: rotate(180deg); }
 
     /* ─── FORMS ─── */
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -105,34 +108,6 @@
       border-color: var(--accent); background: hsla(var(--h), 12%, 18%, 0.9);
       box-shadow: 0 0 0 4px var(--accent-glow); transform: translateY(-1px);
     }
-    /* ─── TABS ─── */
-    .tabs { display: flex; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 12px; margin-bottom: 8px; }
-    .tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-3); cursor: pointer; border-radius: 8px; transition: all 0.2s; }
-    .tab.active { background: var(--surface); color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-
-    /* ─── SECTIONS ─── */
-    .section { display: flex; flex-direction: column; gap: 16px; }
-    .section-header { display: flex; align-items: center; justify-content: space-between; padding: 2px 0; cursor: pointer; user-select: none; }
-    .section-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--text-3); display: flex; align-items: center; gap: 10px; }
-    .section-toggle { color: var(--text-3); font-size: 12px; transition: 0.3s; }
-    .section-toggle.open { transform: rotate(180deg); color: var(--accent); }
-    .section-body { display: flex; flex-direction: column; gap: 16px; overflow: hidden; }
-    .section-body.collapsed { display: none; }
-
-    /* ─── FORMS ─── */
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    label { font-size: 12px; font-weight: 600; color: var(--text-2); letter-spacing: 0.3px; }
-    input, textarea, select {
-      background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
-      font-family: 'Outfit', sans-serif; font-size: 13.5px; padding: 10px 14px;
-      border-radius: var(--radius-sm); outline: none; width: 100%; transition: all 0.2s;
-    }
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--accent); background: hsla(var(--h), 12%, 16%, 0.8);
-      box-shadow: 0 0 0 3px hsla(var(--accent-h), 92%, 61%, 0.1);
-    }
-    textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 
     /* ─── LINE ITEMS ─── */
     .line-items { display: flex; flex-direction: column; gap: 10px; }
@@ -185,6 +160,35 @@
     .preview-area { background: #08080a; display: flex; flex-direction: column; align-items: center; padding: 40px; gap: 32px; overflow-y: auto; position: relative; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
     .preview-toolbar { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 840px; justify-content: space-between; background: hsla(var(--h), 12%, 12%, 0.6); padding: 8px 16px; border-radius: 40px; border: 1px solid var(--glass-border); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 10; }
     .preview-label { font-size: 11px; color: var(--text-3); font-family: 'Syne', sans-serif; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+    
+    /* ─── INVOICE INTERNAL (Theme-Aware) ─── */
+    .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 60px; }
+    .inv-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -1px; color: var(--inv-text); }
+    .inv-title { font-family: 'Syne', sans-serif; font-size: 56px; font-weight: 800; text-transform: uppercase; letter-spacing: -2px; color: var(--inv-accent); text-align: right; line-height: 0.9; }
+    .inv-number { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--inv-mute); margin-top: 8px; text-align: right; letter-spacing: 2px; }
+    .inv-parties { display: grid; grid-template-columns: 1.2fr 1fr; gap: 60px; margin-bottom: 40px; }
+    .inv-party-label { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--inv-mute); margin-bottom: 12px; font-weight: 700; }
+    .inv-party-name { font-weight: 700; font-size: 18px; margin-bottom: 6px; color: var(--inv-text); }
+    .inv-party-detail { font-size: 14px; color: var(--inv-mute); line-height: 1.6; white-space: pre-wrap; }
+    
+    .inv-meta { display: flex; justify-content: space-between; padding: 24px; background: rgba(255,255,255,0.03); border: 1px solid var(--inv-border); border-radius: 8px; margin-bottom: 40px; }
+    .inv-meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--inv-mute); }
+    .inv-meta-value { font-family: 'DM Mono', monospace; font-size: 15px; color: var(--inv-text); }
+    
+    .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+    .inv-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--inv-mute); padding: 0 0 16px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--inv-border); }
+    .inv-table td { padding: 20px 0; border-bottom: 1px solid var(--inv-border); font-size: 15px; color: var(--inv-text); vertical-align: top; }
+    .inv-table td.amount { font-family: 'DM Mono', monospace; color: var(--inv-accent); font-weight: 700; text-align: right; }
+    .inv-table td.num { font-family: 'DM Mono', monospace; color: var(--inv-mute); text-align: center; }
+    
+    .inv-totals { display: flex; justify-content: flex-end; margin-bottom: 60px; }
+    .inv-totals-inner { width: 320px; }
+    .inv-total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; color: var(--inv-text); }
+    .inv-total-row.grand { border-top: 2px solid var(--inv-accent); margin-top: 10px; padding-top: 20px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 26px; color: var(--inv-accent); }
+    
+    .inv-footer { border-top: 1px solid var(--inv-border); padding-top: 40px; display: flex; justify-content: space-between; }
+    .inv-footer-note { font-size: 14px; color: var(--inv-mute); max-width: 400px; line-height: 1.7; font-style: italic; white-space: pre-wrap; }
+
     .preview-controls { display: flex; gap: 8px; align-items: center; }
     .zoom-display { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-accent); font-weight: 600; padding: 6px 12px; background: hsla(var(--h), 12%, 18%, 0.5); border-radius: 20px; }
 
@@ -224,138 +228,52 @@
     /* Modals */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; }
     .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; width: 380px; max-width: calc(100vw - 48px); box-shadow: var(--shadow); }
-    .export-option { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; margin-bottom: 10px; }
-    .export-option:hover { border-color: var(--accent); background: hsla(var(--accent-h), 92%, 61%, 0.05); }
+    .theme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-top: 12px; }
+    .theme-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px; cursor: pointer; transition: all 0.3s; }
+    .theme-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .theme-card.active { border-color: var(--accent); box-shadow: 0 4px 20px rgba(var(--accent-h), 92%, 61%, 0.15); }
+    .theme-preview { width: 100%; height: 60px; border-radius: 8px; margin-bottom: 8px; }
+    .theme-preview.noir { background: linear-gradient(135deg, #000, #111); border: 1px solid #333; }
+    .theme-preview.arctic { background: linear-gradient(135deg, #fff, #f0f4f8); border: 1px solid #e0e6ed; }
+    .theme-preview.slate { background: linear-gradient(135deg, #2d3748, #1a202c); border: 1px solid #4a5568; }
+    .theme-preview.velvet { background: linear-gradient(135deg, #2d1b33, #1a0f1d); border: 1px solid #444; }
+    .theme-preview.orchid { background: linear-gradient(135deg, #2d1b4d, #1a0f2e); border: 1px solid #4d3d7a; }
+    .theme-card span { font-size: 11px; font-weight: 600; color: var(--text-2); text-align: center; display: block; }
     
-    /*     /* ─── INVOICE BASE (Global internal) ─── */
+    .template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .template-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 500; transition: all 0.2s; }
+    .template-item:hover { border-color: var(--accent); background: hsla(var(--accent-h), 92%, 61%, 0.05); }
+    .template-item.active { border-color: var(--accent); background: hsla(var(--accent-h), 92%, 61%, 0.1); box-shadow: 0 0 15px rgba(var(--accent-h), 92%, 61%, 0.2); }
+    .template-item i { font-size: 16px; color: var(--accent); }
+
+    .options-stack { display: flex; flex-direction: column; gap: 12px; }
+    .option-row { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+    .option-row span { font-size: 13px; font-weight: 500; color: var(--text); }
+    .option-check { position: relative; width: 20px; height: 20px; }
+    .option-check input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+    .option-check .box { height: 20px; width: 20px; background: var(--surface); border: 2px solid var(--border); border-radius: 6px; transition: all 0.2s; }
+    .option-check:hover input ~ .box { border-color: var(--accent); }
+    .option-check input:checked ~ .box { background: var(--accent); border-color: var(--accent); }
+    .option-check .box:after { content: ""; position: absolute; display: none; left: 7px; top: 3px; width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+    .option-check input:checked ~ .box:after { display: block; }
+
+    /* ─── THEME DEFINITIONS (Direct CSS Variables) ─── */
+    .theme-noir { --inv-bg: #000000; --inv-text: #ffffff; --inv-accent: #f5c842; --inv-border: rgba(255,255,255,0.1); --inv-mute: #888; }
+    .theme-arctic { --inv-bg: #ffffff; --inv-text: #1a1a1a; --inv-accent: #0066ff; --inv-border: #e2e8f0; --inv-mute: #64748b; }
+    .theme-slate { --inv-bg: #1a202c; --inv-text: #f7fafc; --inv-accent: #cbd5e0; --inv-border: #4a5568; --inv-mute: #a0aec0; }
+    .theme-velvet { --inv-bg: #1a0f1d; --inv-text: #f3e8ff; --inv-accent: #b59dfa; --inv-border: #332140; --inv-mute: #a78bfa; }
+    .theme-orchid { --inv-bg: #0f0a14; --inv-text: #ffffff; --inv-accent: #ff007a; --inv-border: #2d1433; --inv-mute: #ff7eba; }
+
+    .invoice { 
+      background: var(--inv-bg); color: var(--inv-text); 
+      padding: 60px; width: 800px; min-height: 1100px;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.5); border-radius: 4px;
+      position: relative; transition: all 0.5s var(--ease);
+      display: flex; flex-direction: column; gap: 40px;
+    }
+
     .inv-logo-img { max-width: 160px; max-height: 64px; object-fit: contain; display: block; margin-bottom: 8px; }
     .inv-logo-placeholder { width: 64px; height: 64px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 8px; }
-
-    /* Noir 2.0 (Premium Dark) */
-    .theme-noir { background: #000000; color: #ffffff; padding: 80px 70px; font-family: 'Inter', sans-serif; }
-    .theme-noir .inv-accent { color: #f5c842; }
-    .theme-noir .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 80px; }
-    .theme-noir .inv-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -1.2px; line-height: 1; }
-    .theme-noir .inv-title { font-family: 'Syne', sans-serif; font-size: 56px; font-weight: 800; text-transform: uppercase; letter-spacing: -2px; color: #f5c842; text-align: right; line-height: 0.9; }
-    .theme-noir .inv-number { font-family: 'DM Mono', monospace; font-size: 14px; color: #555; margin-top: 8px; text-align: right; letter-spacing: 2px; }
-    .theme-noir .inv-parties { display: grid; grid-template-columns: 1.2fr 1fr; gap: 60px; margin-bottom: 60px; }
-    .theme-noir .inv-party-label { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: #444; margin-bottom: 12px; font-family: 'Syne', sans-serif; font-weight: 700; }
-    .theme-noir .inv-party-name { font-weight: 700; font-size: 18px; margin-bottom: 6px; letter-spacing: -0.2px; }
-    .theme-noir .inv-party-detail { font-size: 14px; color: #888; line-height: 1.6; white-space: pre-wrap; }
-    .theme-noir .inv-meta { display: flex; justify-content: space-between; margin-bottom: 60px; padding: 24px 32px; background: #0a0a0a; border: 1px solid #1a1a1a; }
-    .theme-noir .inv-meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #444; }
-    .theme-noir .inv-meta-value { font-family: 'DM Mono', monospace; font-size: 15px; color: #fff; }
-    .theme-noir .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 60px; }
-    .theme-noir .inv-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #444; padding: 0 0 16px; text-align: left; font-weight: 700; font-family: 'Syne', sans-serif; border-bottom: 2px solid #1a1a1a; }
-    .theme-noir .inv-table td { padding: 20px 0; border-bottom: 1px solid #0d0d0d; font-size: 15px; vertical-align: top; }
-    .theme-noir .inv-table td.desc { font-weight: 600; width: 45%; }
-    .theme-noir .inv-table th:last-child, .theme-noir .inv-table td:last-child { text-align: right; }
-    .theme-noir .inv-table td.amount { font-family: 'DM Mono', monospace; color: #f5c842; font-weight: 700; font-size: 16px; }
-    .theme-noir .inv-table td.num { font-family: 'DM Mono', monospace; color: #555; }
-    .theme-noir .inv-totals { display: flex; justify-content: flex-end; margin-bottom: 80px; }
-    .theme-noir .inv-totals-inner { width: 320px; }
-    .theme-noir .inv-total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; }
-    .theme-noir .inv-total-row.grand { border-top: 2px solid #f5c842; margin-top: 10px; padding-top: 20px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: #f5c842; }
-    .theme-noir .inv-total-label { color: #555; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; }
-    .theme-noir .inv-total-val { font-family: 'DM Mono', monospace; }
-    .theme-noir .inv-footer { border-top: 1px solid #1a1a1a; padding-top: 40px; display: flex; justify-content: space-between; }
-    .theme-noir .inv-footer-note { font-size: 14px; color: #666; max-width: 360px; line-height: 1.7; font-style: italic; white-space: pre-wrap; }
-    .theme-noir .inv-footer-thank { font-family: 'Syne', sans-serif; font-size: 14px; color: #f5c842; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; white-space: pre-wrap; }
-    .theme-noir .inv-desc-small { font-size: 13px; color: #444; margin-top: 6px; font-weight: 400; font-style: normal; }
-    .theme-noir .inv-decoration { position: absolute; top: 0; right: 0; width: 300px; height: 300px; background: radial-gradient(circle at 100% 0%, rgba(245,200,66,0.08) 0%, transparent 75%); pointer-events: none; }
-
-    /* Arctic 2.0 (Crisp Light) */
-    .theme-arctic { background: #ffffff; color: #000000; padding: 80px 70px; font-family: 'Inter', sans-serif; }
-    .theme-arctic .inv-accent { color: #0066ff; }
-    .theme-arctic .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 60px; }
-    .theme-arctic .inv-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 28px; color: #000; letter-spacing: -1px; border-left: 6px solid #0066ff; padding-left: 16px; }
-    .theme-arctic .inv-title { font-family: 'Syne', sans-serif; font-size: 52px; font-weight: 800; text-transform: uppercase; letter-spacing: -2px; color: #0066ff; text-align: right; line-height: 0.9; }
-    .theme-arctic .inv-number { font-family: 'DM Mono', monospace; font-size: 14px; color: #ddd; margin-top: 8px; text-align: right; letter-spacing: 1px; }
-    .theme-arctic .inv-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-bottom: 60px; }
-    .theme-arctic .inv-party-label { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: #bbb; margin-bottom: 12px; font-family: 'Syne', sans-serif; font-weight: 700; }
-    .theme-arctic .inv-party-name { font-weight: 700; font-size: 18px; margin-bottom: 6px; letter-spacing: -0.2px; }
-    .theme-arctic .inv-party-detail { font-size: 14px; color: #666; line-height: 1.6; white-space: pre-wrap; }
-    .theme-arctic .inv-meta { display: flex; justify-content: space-between; margin-bottom: 60px; padding: 24px 0; border-top: 2px solid #f0f0f0; border-bottom: 2px solid #f0f0f0; }
-    .theme-arctic .inv-meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #999; }
-    .theme-arctic .inv-meta-value { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 600; color: #000; }
-    .theme-arctic .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
-    .theme-arctic .inv-table thead tr { background: #000000; }
-    .theme-arctic .inv-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #fff; padding: 14px 20px; font-family: 'Syne', sans-serif; text-align: left; }
-    .theme-arctic .inv-table tr:nth-child(even) { background: #f9f9f9; }
-    .theme-arctic .inv-table td { padding: 18px 20px; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
-    .theme-arctic .inv-table th:last-child, .theme-arctic .inv-table td:last-child { text-align: right; }
-    .theme-arctic .inv-table td.amount { font-family: 'DM Mono', monospace; color: #0066ff; font-weight: 700; }
-    .theme-arctic .inv-table td.desc { font-weight: 600; }
-    .theme-arctic .inv-totals { display: flex; justify-content: flex-end; margin-bottom: 60px; }
-    .theme-arctic .inv-totals-inner { width: 300px; }
-    .theme-arctic .inv-total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; }
-    .theme-arctic .inv-total-row.grand { border-top: 4px solid #000000; margin-top: 10px; padding-top: 20px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: #000; }
-    .theme-arctic .inv-total-label { color: #999; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; }
-    .theme-arctic .inv-footer { border-top: 1px solid #f0f0f0; padding-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
-    .theme-arctic .inv-footer-note { font-size: 14px; color: #888; max-width: 360px; line-height: 1.7; white-space: pre-wrap; }
-    .theme-arctic .inv-footer-thank { font-family: 'Syne', sans-serif; font-size: 14px; color: #0066ff; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; white-space: pre-wrap; }
-    .theme-arctic .inv-decoration { position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background: linear-gradient(to right, #0066ff, #000000); }
-
-    /* Velvet (Luxury Purple) */
-    .theme-velvet { background: #0f0a1a; color: #e9e5f5; padding: 80px 70px; font-family: 'Outfit', sans-serif; }
-    .theme-velvet .inv-accent { color: #b59dfa; }
-    .theme-velvet .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 60px; }
-    .theme-velvet .inv-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; background: linear-gradient(135deg, #b59dfa, #ebdfff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-    .theme-velvet .inv-title { font-family: 'Syne', sans-serif; font-size: 56px; font-weight: 800; text-transform: uppercase; letter-spacing: -2px; color: #b59dfa; text-align: right; line-height: 0.9; }
-    .theme-velvet .inv-number { font-family: 'DM Mono', monospace; font-size: 14px; color: #5a4b86; margin-top: 8px; text-align: right; letter-spacing: 1px; }
-    .theme-velvet .inv-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-bottom: 40px; }
-    .theme-velvet .inv-party-label { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: #5a4b86; margin-bottom: 12px; font-weight: 600; }
-    .theme-velvet .inv-party-name { font-weight: 600; font-size: 18px; margin-bottom: 6px; letter-spacing: -0.2px; }
-    .theme-velvet .inv-party-detail { font-size: 14px; color: #aaa1c5; line-height: 1.6; white-space: pre-wrap; }
-    .theme-velvet .inv-meta { display: flex; justify-content: space-between; margin-bottom: 40px; padding: 24px; background: rgba(181, 157, 250, 0.05); border-radius: 12px; }
-    .theme-velvet .inv-meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #5a4b86; font-weight: 600; }
-    .theme-velvet .inv-meta-value { font-family: 'DM Mono', monospace; font-size: 15px; color: #fff; }
-    .theme-velvet .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
-    .theme-velvet .inv-table th { border-bottom: 1px solid #33215c; color: #b59dfa; padding: 16px 0; text-align: left; text-transform: uppercase; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
-    .theme-velvet .inv-table td { border-bottom: 1px solid #1a1130; padding: 16px 0; font-size: 15px; }
-    .theme-velvet .inv-table td.desc { font-weight: 500; }
-    .theme-velvet .inv-table td.amount { font-family: 'DM Mono', monospace; color: #fff; font-weight: 600; }
-    .theme-velvet .inv-table th:last-child, .theme-velvet .inv-table td:last-child { text-align: right; }
-    .theme-velvet .inv-totals { display: flex; justify-content: flex-end; margin-bottom: 40px; }
-    .theme-velvet .inv-totals-inner { width: 320px; }
-    .theme-velvet .inv-total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; }
-    .theme-velvet .inv-total-row.grand { border-top: 2px solid #b59dfa; color: #b59dfa; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; padding-top: 16px; margin-top: 16px; }
-    .theme-velvet .inv-total-label { color: #8c7dba; }
-    .theme-velvet .inv-footer { border-top: 1px solid #33215c; padding-top: 30px; display: flex; justify-content: space-between; }
-    .theme-velvet .inv-footer-note { font-size: 14px; color: #aaa1c5; max-width: 360px; line-height: 1.7; white-space: pre-wrap; }
-    .theme-velvet .inv-footer-thank { font-family: 'Syne', sans-serif; font-size: 14px; color: #b59dfa; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; white-space: pre-wrap; }
-    .theme-velvet .inv-desc-small { font-size: 13px; color: #8c7dba; margin-top: 6px; }
-
-    /* Crystal (Full Glass) */
-    .theme-crystal { background: url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2629&auto=format&fit=crop') center/cover; position: relative; color: #fff; padding: 80px 70px; font-family: 'Outfit', sans-serif; }
-    .theme-crystal::before { content: ''; position: absolute; inset: 0; background: rgba(20,20,30,0.6); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); z-index: 0; }
-    .theme-crystal > * { position: relative; z-index: 1; }
-    .theme-crystal .inv-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; }
-    .theme-crystal .inv-title { font-family: 'Syne', sans-serif; font-size: 56px; font-weight: 800; text-transform: uppercase; text-shadow: 0 4px 20px rgba(255,255,255,0.4); text-align: right; line-height: 0.9; color: #fff; }
-    .theme-crystal .inv-number { font-family: 'DM Mono', monospace; font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 8px; text-align: right; }
-    .theme-crystal .inv-header { margin-bottom: 60px; display: flex; justify-content: space-between; align-items: flex-start; }
-    .theme-crystal .inv-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-bottom: 40px; }
-    .theme-crystal .inv-party-label { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: rgba(255,255,255,0.5); margin-bottom: 12px; font-weight: 600; }
-    .theme-crystal .inv-party-name { font-weight: 600; font-size: 18px; margin-bottom: 6px; }
-    .theme-crystal .inv-party-detail { font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.6; white-space: pre-wrap; }
-    .theme-crystal .inv-meta { display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px 32px; margin-bottom: 60px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
-    .theme-crystal .inv-meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.6); }
-    .theme-crystal .inv-meta-value { font-family: 'DM Mono', monospace; font-size: 15px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-    .theme-crystal .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
-    .theme-crystal .inv-table td { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 16px 0; font-size: 15px; }
-    .theme-crystal .inv-table th { border-bottom: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); padding: 16px 0; text-align: left; text-transform: uppercase; font-size: 11px; letter-spacing: 2px; }
-    .theme-crystal .inv-table td.desc { font-weight: 500; }
-    .theme-crystal .inv-table td.amount { font-family: 'DM Mono', monospace; font-weight: 600; }
-    .theme-crystal .inv-table th:last-child, .theme-crystal .inv-table td:last-child { text-align: right; }
-    .theme-crystal .inv-totals { display: flex; justify-content: flex-end; margin-bottom: 40px; }
-    .theme-crystal .inv-totals-inner { width: 320px; }
-    .theme-crystal .inv-total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; }
-    .theme-crystal .inv-total-row.grand { border-top: 2px solid rgba(255,255,255,0.4); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; margin-top: 16px; padding-top: 16px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-    .theme-crystal .inv-total-label { color: rgba(255,255,255,0.7); }
-    .theme-crystal .inv-footer { border-top: 1px solid rgba(255,255,255,0.2); padding-top: 30px; display: flex; justify-content: space-between; }
-    .theme-crystal .inv-footer-note { font-size: 14px; color: rgba(255,255,255,0.8); max-width: 360px; line-height: 1.7; white-space: pre-wrap; }
-    .theme-crystal .inv-footer-thank { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); white-space: pre-wrap; }
-    .theme-crystal .inv-desc-small { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 6px; }
 
     .vault-history { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; padding-right: 4px; }
     .vault-item { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s var(--ease); }
@@ -365,16 +283,20 @@
     .vault-item-meta { font-size: 11px; color: var(--text-3); }
     .vault-actions { display: flex; gap: 4px; }
 
-    .vault-actions { display: flex; gap: 4px; }
-
-    /* ─── FLOATING EXIT ─── */
+    /* ─── FLOATING NAVIGATION ─── */
+    .nav-controls { position: fixed; right: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 500; }
+    .nav-btn { width: 44px; height: 44px; background: hsla(var(--h), 12%, 18%, 0.8); border: 1px solid var(--glass-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text); cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: all 0.3s; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    .nav-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); transform: scale(1.1); }
+    .nav-btn i { font-size: 18px; }
+    
+    /* ─── FIXED EXIT ─── */
     .focus-exit-btn {
       position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
-      z-index: 999999; background: var(--surface); border: 1px solid var(--accent);
-      color: var(--accent); padding: 12px 24px; border-radius: 40px; font-weight: 700;
-      display: flex; align-items: center; gap: 10px; cursor: pointer; opacity: 0;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: background 0.3s, transform 0.5s var(--ease);
-      font-family: 'Syne', sans-serif; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;
+      background: hsla(var(--h), 12%, 12%, 0.8); border: 1px solid var(--accent);
+      color: var(--accent); padding: 12px 24px; border-radius: 40px;
+      font-weight: 700; font-size: 14px; cursor: pointer; z-index: 300;
+      display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px);
+      box-shadow: 0 0 40px rgba(245,200,66,0.2); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .focus-exit-btn:hover { background: var(--accent); color: var(--surface); }
 
@@ -412,6 +334,7 @@
 
     <!-- ─── Sidebar ─── -->
     <div class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
 
       <!-- Tabs -->
       <div class="tabs">
@@ -432,415 +355,354 @@
               id="progressPct">0%</span></div>
         </div>
 
-        <div class="sidebar-grid">
-          <!-- FROM (Sender) -->
-          <div class="section">
-            <div class="section-header" onclick="toggleSection('from')">
-              <span class="section-title"><i class="ph ph-buildings" style="font-size: 16px;"></i> Your Business</span>
-              <span class="section-toggle open" id="toggle-from">▲</span>
+        <!-- FROM (Sender) -->
+        <div class="section">
+          <div class="section-header" onclick="toggleSection('from')">
+            <span class="section-title"><i class="ph ph-buildings" style="font-size: 16px;"></i> Your Business</span>
+            <span class="section-toggle" id="toggle-from">▼</span>
+          </div>
+          <div class="section-body" id="body-from">
+            <!-- Logo Upload -->
+            <div class="form-group">
+              <label>Business Logo</label>
+              <div class="logo-upload-zone" id="logoUploadZone" onclick="triggerLogoUpload()">
+                <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)">
+                <div id="logoUploadEmpty">
+                  <div class="logo-upload-icon"><i class="ph ph-image"></i></div>
+                  <div style="font-size:12px;font-weight:500;color:var(--text2)">Click to upload</div>
+                </div>
+                <div id="logoUploadPreview" style="display:none">
+                  <img id="logoPreviewImg" class="logo-preview-img" src="#" alt="Logo preview">
+                </div>
+              </div>
             </div>
-            <div class="section-body" id="body-from">
-              <!-- Logo Upload -->
-              <div class="form-group">
-                <label>Business Logo</label>
-                <div class="logo-upload-zone" id="logoUploadZone" onclick="triggerLogoUpload()">
-                  <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)">
-                  <div id="logoUploadEmpty">
-                    <div class="logo-upload-icon"><i class="ph ph-image"></i></div>
-                    <div style="font-size:12px;font-weight:500;color:var(--text2)">Click to upload</div>
-                  </div>
-                  <div id="logoUploadPreview" style="display:none">
-                    <img id="logoPreviewImg" class="logo-preview-img" src="#" alt="Logo preview">
-                  </div>
-                </div>
-              </div>
 
+            <div class="form-group">
+              <label>Business / Your Name <span class="required">*</span></label>
+              <input type="text" id="fromName" placeholder="Acme Studio" oninput="update()">
+            </div>
+            <div class="form-row">
               <div class="form-group">
-                <label>Business / Your Name <span class="required">*</span></label>
-                <input type="text" id="fromName" placeholder="Acme Studio" oninput="update()">
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Email</label>
-                  <input type="email" id="fromEmail" placeholder="hello@acme.com" oninput="update()">
-                </div>
-                <div class="form-group">
-                  <label>Phone</label>
-                  <input type="text" id="fromPhone" placeholder="+234..." oninput="update()">
-                </div>
+                <label>Email</label>
+                <input type="email" id="fromEmail" placeholder="hello@acme.com" oninput="update()">
               </div>
               <div class="form-group">
-                <label>Address</label>
-                <textarea id="fromAddress" placeholder="123 Business St..." rows="2" oninput="update()"></textarea>
+                <label>Phone</label>
+                <input type="text" id="fromPhone" placeholder="+234..." oninput="update()">
               </div>
+            </div>
+            <div class="form-group">
+              <label>Address</label>
+              <textarea id="fromAddress" placeholder="123 Business St..." rows="2" oninput="update()"></textarea>
             </div>
           </div>
+        </div>
 
-          <!-- TO (Client) -->
-          <div class="section">
-            <div class="section-header" onclick="toggleSection('to')">
-              <span class="section-title"><i class="ph ph-user-circle" style="font-size: 16px;"></i> Bill To (Client)</span>
-              <span class="section-toggle open" id="toggle-to">▲</span>
+        <!-- TO (Client) -->
+        <div class="section">
+          <div class="section-header" onclick="toggleSection('to')">
+            <span class="section-title"><i class="ph ph-user-circle" style="font-size: 16px;"></i> Bill To (Client)</span>
+            <span class="section-toggle" id="toggle-to">▼</span>
+          </div>
+          <div class="section-body" id="body-to">
+            <div class="form-group">
+              <label>Client Name <span class="required">*</span></label>
+              <input type="text" id="toName" placeholder="Client Company Ltd" oninput="update()">
             </div>
-            <div class="section-body" id="body-to">
+            <div class="form-row">
               <div class="form-group">
-                <label>Client Name <span class="required">*</span></label>
-                <input type="text" id="toName" placeholder="Client Company Ltd" oninput="update()">
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Client Email</label>
-                  <input type="email" id="toEmail" placeholder="client@company.com" oninput="update()">
-                </div>
-                <div class="form-group">
-                  <label>Client Phone</label>
-                  <input type="text" id="toPhone" placeholder="+234..." oninput="update()">
-                </div>
+                <label>Client Email</label>
+                <input type="email" id="toEmail" placeholder="client@company.com" oninput="update()">
               </div>
               <div class="form-group">
-                <label>Client Address</label>
-                <textarea id="toAddress" placeholder="456 Client Avenue..." rows="3" oninput="update()"></textarea>
+                <label>Client Phone</label>
+                <input type="text" id="toPhone" placeholder="+234..." oninput="update()">
               </div>
+            </div>
+            <div class="form-group">
+              <label>Client Address</label>
+              <textarea id="toAddress" placeholder="456 Client Avenue..." rows="3" oninput="update()"></textarea>
             </div>
           </div>
-        </div><!-- end sidebar-grid -->
+        </div>
 
-        <div class="sidebar-grid">
-          <!-- INVOICE DETAILS -->
-          <div class="section">
-            <div class="section-header" onclick="toggleSection('details')">
-              <span class="section-title"><i class="ph ph-hash" style="font-size: 16px;"></i> Invoice Details</span>
-              <span class="section-toggle open" id="toggle-details">▲</span>
+        <!-- INVOICE DETAILS -->
+        <div class="section">
+          <div class="section-header" onclick="toggleSection('details')">
+            <span class="section-title"><i class="ph ph-hash" style="font-size: 16px;"></i> Invoice Details</span>
+            <span class="section-toggle" id="toggle-details">▼</span>
+          </div>
+          <div class="section-body" id="body-details">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Invoice Number <span class="required">*</span></label>
+                <input type="text" id="invNumber" placeholder="INV-001" oninput="update()">
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="invStatus" onchange="update()">
+                  <option value="draft">Draft</option>
+                  <option value="unpaid">Unpaid</option>
+                  <option value="paid">Paid</option>
+                </select>
+              </div>
             </div>
-            <div class="section-body" id="body-details">
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Invoice Number <span class="required">*</span></label>
-                  <input type="text" id="invNumber" placeholder="INV-001" oninput="update()">
-                </div>
-                <div class="form-group">
-                  <label>Status</label>
-                  <select id="invStatus" onchange="update()">
-                    <option value="draft">Draft</option>
-                    <option value="unpaid">Unpaid</option>
-                    <option value="paid">Paid</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Issue Date <span class="required">*</span></label>
-                  <input type="date" id="invDate" oninput="update()">
-                </div>
-                <div class="form-group">
-                  <label>Due Date</label>
-                  <input type="date" id="invDue" oninput="update()">
-                </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Issue Date <span class="required">*</span></label>
+                <input type="date" id="invDate" oninput="update()">
               </div>
               <div class="form-group">
-                <label>Reference / PO</label>
-                <input type="text" id="invRef" placeholder="PO-2024..." oninput="update()">
+                <label>Due Date</label>
+                <input type="date" id="invDue" oninput="update()">
               </div>
-              <div class="form-group">
-                <label>Invoice Subject / Project <span class="required">*</span></label>
-                <input type="text" id="invSubject" placeholder="Strategy & Brand..." oninput="update()">
-              </div>
+            </div>
+            <div class="form-group">
+              <label>Reference / PO</label>
+              <input type="text" id="invRef" placeholder="PO-2024..." oninput="update()">
+            </div>
+            <div class="form-group">
+              <label>Invoice Subject / Project <span class="required">*</span></label>
+              <input type="text" id="invSubject" placeholder="Strategy & Brand..." oninput="update()">
             </div>
           </div>
-
-          <!-- PAYMENT & NOTES -->
-          <div class="section">
-            <div class="section-header" onclick="toggleSection('payment')">
-              <span class="section-title"><i class="ph ph-credit-card" style="font-size: 16px;"></i> Payment & Notes</span>
-              <span class="section-toggle open" id="toggle-payment">▲</span>
-            </div>
-            <div class="section-body" id="body-payment">
-              <div class="form-group">
-                <label>Payment Method</label>
-                <input type="text" id="paymentMethod" placeholder="Bank Transfer" oninput="update()">
-              </div>
-              <div class="form-group">
-                <label>Payment Details</label>
-                <textarea id="bankDetails" placeholder="Bank Name / Acc No..." rows="2" oninput="update()"></textarea>
-              </div>
-              <div class="form-group">
-                <label>Notes</label>
-                <textarea id="notes" placeholder="Thank you for your business!" rows="2" oninput="update()"></textarea>
-              </div>
-            </div>
-          </div>
-        </div><!-- end second sidebar-grid -->
-
-        <hr class="divider">
+        </div>
 
         <!-- LINE ITEMS -->
         <div class="section">
           <div class="section-header" onclick="toggleSection('items')">
             <span class="section-title"><i class="ph ph-list-bullets" style="font-size: 16px;"></i> Line Items</span>
-            <span class="section-toggle open" id="toggle-items">▲</span>
+            <span class="section-toggle" id="toggle-items">▼</span>
           </div>
           <div class="section-body" id="body-items">
-            <!-- Line items content... -->
-          <div style="display:grid; grid-template-columns: 1fr 60px 80px 80px 36px; gap:6px; padding: 0 0 4px;">
-            <span style="font-size:11px;color:var(--text3);font-weight:600;">DESCRIPTION</span>
-            <span style="font-size:11px;color:var(--text3);font-weight:600;">QTY</span>
-            <span style="font-size:11px;color:var(--text3);font-weight:600;">RATE</span>
-            <span style="font-size:11px;color:var(--text3);font-weight:600;">AMOUNT</span>
-            <span></span>
-          </div>
-          <div class="line-items" id="lineItems"></div>
-          <button class="btn btn-ghost btn-sm" onclick="addItem()" style="width:100%; justify-content:center;">
-            <i class="ph ph-plus-circle"></i> Add Line Item
-          </button>
-
-          <!-- Totals -->
-          <div class="totals-card" id="totalsCard">
-            <div class="total-row">
-              <span class="total-label">Subtotal</span>
-              <span class="total-value" id="subtotalDisplay">₦0.00</span>
+            <div style="display:grid; grid-template-columns: 1fr 60px 80px 80px 36px; gap:6px; padding: 0 0 4px;">
+              <span style="font-size:11px;color:var(--text3);font-weight:600;">DESCRIPTION</span>
+              <span style="font-size:11px;color:var(--text3);font-weight:600;">QTY</span>
+              <span style="font-size:11px;color:var(--text3);font-weight:600;">RATE</span>
+              <span style="font-size:11px;color:var(--text3);font-weight:600;">AMOUNT</span>
+              <span></span>
             </div>
-            <div class="total-row" id="discountRow" style="display:none">
-              <span class="total-label">Discount (<span id="discPct"></span>)</span>
-              <span class="total-value" id="discountDisplay" style="color:var(--success)"></span>
-            </div>
-            <div class="total-row" id="taxRow" style="display:none">
-              <span class="total-label">Tax (<span id="taxPctDisplay"></span>)</span>
-              <span class="total-value" id="taxDisplay"></span>
-            </div>
-            <div class="total-row" id="shippingRow" style="display:none">
-              <span class="total-label">Shipping</span>
-              <span class="total-value" id="shippingDisplay"></span>
-            </div>
-            <div class="total-row divider grand">
-              <span>Total Due</span>
-              <span id="grandDisplay">₦0.00</span>
-            </div>
+            <div class="line-items" id="lineItems"></div>
+            <button class="btn btn-ghost btn-sm" onclick="addItem()" style="width:100%; justify-content:center; margin-top:12px;">
+              <i class="ph ph-plus-circle"></i> Add Line Item
+            </button>
           </div>
         </div>
-      </div>
 
-      <hr class="divider">
-
-      <!-- CHARGES & ADJUSTMENTS -->
-      <div class="section">
-        <div class="section-header" onclick="toggleSection('charges')">
-          <span class="section-title"><span class="section-title-icon">💸</span> Charges & Adjustments</span>
-          <span class="section-toggle" id="toggle-charges">▼</span>
+        <!-- Totals -->
+        <div class="totals-card" id="totalsCard">
+          <div class="total-row">
+            <span class="total-label">Subtotal</span>
+            <span class="total-value" id="subtotalDisplay">₦0.00</span>
+          </div>
+          <div class="total-row" id="discountRow" style="display:none">
+            <span class="total-label">Discount (<span id="discPct"></span>)</span>
+            <span class="total-value" id="discountDisplay" style="color:var(--success)"></span>
+          </div>
+          <div class="total-row" id="taxRow" style="display:none">
+            <span class="total-label">Tax (<span id="taxPctDisplay"></span>)</span>
+            <span class="total-value" id="taxDisplay"></span>
+          </div>
+          <div class="total-row" id="shippingRow" style="display:none">
+            <span class="total-label">Shipping</span>
+            <span class="total-value" id="shippingDisplay"></span>
+          </div>
+          <div class="total-row divider grand">
+            <span>Total Due</span>
+            <span id="grandDisplay">₦0.00</span>
+          </div>
         </div>
-        <div class="section-body collapsed" id="body-charges">
-          <div class="form-row">
+
+        <!-- CHARGES & ADJUSTMENTS -->
+        <div class="section">
+          <div class="section-header" onclick="toggleSection('charges')">
+            <span class="section-title"><i class="ph ph-percent" style="font-size: 16px;"></i> Charges & Adjustments</span>
+            <span class="section-toggle" id="toggle-charges">▼</span>
+          </div>
+          <div class="section-body" id="body-charges">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Discount (%)</label>
+                <input type="number" id="discountPct" placeholder="0" min="0" max="100" step="0.5" oninput="update()">
+              </div>
+              <div class="form-group">
+                <label>Tax (%)</label>
+                <input type="number" id="taxPct" placeholder="0" min="0" max="100" step="0.5" oninput="update()">
+              </div>
+            </div>
             <div class="form-group">
-              <label>Discount (%)</label>
-              <input type="number" id="discountPct" placeholder="0" min="0" max="100" step="0.5" oninput="update()">
+              <label>Shipping / Delivery Fee</label>
+              <input type="number" id="shipping" placeholder="0.00" min="0" step="0.01" oninput="update()">
             </div>
             <div class="form-group">
-              <label>Tax (%)</label>
-              <input type="number" id="taxPct" placeholder="0" min="0" max="100" step="0.5" oninput="update()">
+              <label>Deposit Already Paid</label>
+              <input type="number" id="deposit" placeholder="0.00" min="0" step="0.01" oninput="update()">
             </div>
-          </div>
-          <div class="form-group">
-            <label>Shipping / Delivery Fee</label>
-            <input type="number" id="shipping" placeholder="0.00" min="0" step="0.01" oninput="update()">
-          </div>
-          <div class="form-group">
-            <label>Deposit Already Paid</label>
-            <input type="number" id="deposit" placeholder="0.00" min="0" step="0.01" oninput="update()">
           </div>
         </div>
-      </div>
 
-        <div class="sidebar-grid">
-          <!-- TAX & FEES -->
-          <div class="section">
-            <div class="section-header" onclick="toggleSection('tax')">
-              <span class="section-title"><i class="ph ph-percent" style="font-size: 16px;"></i> Tax & Discounts</span>
-              <span class="section-toggle open" id="toggle-tax">▲</span>
+        <!-- PAYMENT & NOTES -->
+        <div class="section">
+          <div class="section-header" onclick="toggleSection('payment')">
+            <span class="section-title"><i class="ph ph-credit-card" style="font-size: 16px;"></i> Payment & Notes</span>
+            <span class="section-toggle" id="toggle-payment">▼</span>
+          </div>
+          <div class="section-body" id="body-payment">
+            <div class="form-group">
+              <label>Payment Method</label>
+              <input type="text" id="paymentMethod" placeholder="Bank Transfer" oninput="update()">
             </div>
-            <div class="section-body" id="body-tax">
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Discount (%)</label>
-                  <input type="number" id="discountPct" placeholder="0" oninput="update()">
-                </div>
-                <div class="form-group">
-                  <label>Tax (%)</label>
-                  <input type="number" id="taxPct" placeholder="0" oninput="update()">
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Shipping Fee</label>
-                <input type="number" id="shipping" placeholder="0.00" oninput="update()">
-              </div>
+            <div class="form-group">
+              <label>Payment Details</label>
+              <textarea id="bankDetails" placeholder="Bank Name / Acc No..." rows="2" oninput="update()"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Notes</label>
+              <textarea id="notes" placeholder="Thank you for your business!" rows="2" oninput="update()"></textarea>
             </div>
           </div>
+        </div>
 
-          <!-- PAYMENT & NOTES (MODERN) -->
-          <div class="section">
-            <div class="section-header" onclick="toggleSection('payment')">
-              <span class="section-title"><i class="ph ph-credit-card" style="font-size: 16px;"></i> Payment & Notes</span>
-              <span class="section-toggle open" id="toggle-payment">▲</span>
-            </div>
-            <div class="section-body" id="body-payment">
-              <div class="form-group">
-                <label>Bank / Payment Method</label>
-                <textarea id="bankDetails" placeholder="Bank: GTBank&#10;Acc: 0123456789" rows="2" oninput="update()"></textarea>
-              </div>
-              <div class="form-group">
-                <label>Note to Client</label>
-                <textarea id="notes" placeholder="Thank you for your business!" rows="1" oninput="update()"></textarea>
-              </div>
-            </div>
+      </div><!-- end tab-content -->
+
+      <!-- ══ DESIGN TAB ══ -->
+      <div id="tab-design" style="display:none; flex-direction:column; gap:24px;">
+        <!-- THEME PICKER -->
+        <div class="section">
+          <div class="section-header" onclick="toggleSection('theme')">
+            <span class="section-title"><i class="ph ph-palette"></i> Cinematic Themes</span>
+            <span class="section-toggle" id="toggle-theme">▼</span>
           </div>
-        </div><!-- end sidebar-grid -->
-
-    </div><!-- end tab-content -->
-
-    <!-- ══ DESIGN TAB ══ -->
-    <div id="tab-design" style="display:none; flex-direction:column; gap:24px;">
-
-        <div class="sidebar-grid">
-          <!-- THEME PICKER -->
-          <div class="section">
-            <div class="section-title" style="margin-bottom:12px;"><i class="ph ph-palette"></i> Invoice Theme</div>
+          <div class="section-body" id="body-theme">
             <div class="theme-grid" id="themeGrid">
-              <!-- Grid content stays same -->
-              <div>
-                <div class="theme-swatch active" onclick="setTheme('noir')" id="swatch-noir">
-                  <div class="theme-swatch-header" style="background:#000; border-bottom:1px solid #333"></div>
-                  <div class="theme-swatch-body" style="background:#000">
-                    <div class="theme-swatch-line" style="background:#f5c842; height:3px"></div>
-                    <div class="theme-swatch-line" style="background:#333"></div>
-                    <div class="theme-swatch-line" style="background:#333; width:60%"></div>
-                  </div>
-                </div>
-                <div class="theme-name">Noir 2.0</div>
+              <div class="theme-card active" onclick="setTheme('noir')" id="swatch-noir">
+                <div class="theme-preview noir"></div>
+                <span>Noir 2.0</span>
               </div>
-              <div>
-                <div class="theme-swatch" onclick="setTheme('arctic')" id="swatch-arctic">
-                  <div class="theme-swatch-header" style="background:#fff; border-bottom:1px solid #eee"></div>
-                  <div class="theme-swatch-body" style="background:#fff">
-                    <div class="theme-swatch-line" style="background:#0066ff; height:3px"></div>
-                    <div class="theme-swatch-line" style="background:#eee"></div>
-                    <div class="theme-swatch-line" style="background:#eee; width:60%"></div>
-                  </div>
-                </div>
-                <div class="theme-name">Arctic 2.0</div>
+              <div class="theme-card" onclick="setTheme('arctic')" id="swatch-arctic">
+                <div class="theme-preview arctic"></div>
+                <span>Arctic Frost</span>
               </div>
-              <div>
-                <div class="theme-swatch" onclick="setTheme('crystal')" id="swatch-crystal">
-                  <div class="theme-swatch-header" style="background:linear-gradient(45deg, #1a1a2e, #16213e)"></div>
-                  <div class="theme-swatch-body" style="background:rgba(255,255,255,0.05); backdrop-filter:blur(4px)">
-                    <div class="theme-swatch-line" style="background:#fff; height:3px"></div>
-                    <div class="theme-swatch-line" style="background:rgba(255,255,255,0.2)"></div>
-                    <div class="theme-swatch-line" style="background:rgba(255,255,255,0.2); width:60%"></div>
-                  </div>
-                </div>
-                <div class="theme-name">Crystal</div>
+              <div class="theme-card" onclick="setTheme('slate')" id="swatch-slate">
+                <div class="theme-preview slate"></div>
+                <span>Monochrome Slate</span>
               </div>
-              <div>
-                <div class="theme-swatch" onclick="setTheme('velvet')" id="swatch-velvet">
-                  <div class="theme-swatch-header" style="background:#0f0a1a"></div>
-                  <div class="theme-swatch-body" style="background:#0f0a1a">
-                    <div class="theme-swatch-line" style="background:#b59dfa; height:3px"></div>
-                    <div class="theme-swatch-line" style="background:#33215c"></div>
-                    <div class="theme-swatch-line" style="background:#33215c; width:60%"></div>
-                  </div>
-                </div>
-                <div class="theme-name">Velvet</div>
+              <div class="theme-card" onclick="setTheme('velvet')" id="swatch-velvet">
+                <div class="theme-preview velvet"></div>
+                <span>Royal Velvet</span>
+              </div>
+              <div class="theme-card" onclick="setTheme('orchid')" id="swatch-orchid">
+                <div class="theme-preview orchid"></div>
+                <span>Midnight Orchid</span>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- CURRENCY & OPTIONS -->
-          <div class="section">
-            <div class="section-title" style="margin-bottom:12px;"><i class="ph ph-coins"></i> Currency</div>
+        <!-- CURRENCY & OPTIONS -->
+        <div class="section">
+          <div class="section-header" onclick="toggleSection('currency')">
+            <span class="section-title"><i class="ph ph-coins"></i> Currency & Options</span>
+            <span class="section-toggle" id="toggle-currency">▼</span>
+          </div>
+          <div class="section-body" id="body-currency">
             <div class="currency-select" id="currencySelect" style="margin-bottom: 24px;">
               <button class="currency-btn active" onclick="setCurrency('₦','NGN')" id="cur-NGN">₦ NGN</button>
               <button class="currency-btn" onclick="setCurrency('$','USD')" id="cur-USD">$ USD</button>
               <button class="currency-btn" onclick="setCurrency('€','EUR')" id="cur-EUR">€ EUR</button>
               <button class="currency-btn" onclick="setCurrency('£','GBP')" id="cur-GBP">£ GBP</button>
             </div>
-            
-            <div class="section-title" style="margin-bottom:12px;"><i class="ph ph-sliders"></i> Options</div>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; color:var(--text);">
-                <input type="checkbox" id="showLogo" checked onchange="update()"> Show business logo
+            <div class="options-stack">
+              <label class="option-row">
+                <div class="option-check">
+                  <input type="checkbox" id="showLogo" checked onchange="update()">
+                  <div class="box"></div>
+                </div>
+                <span>Show Business Logo</span>
               </label>
-              <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; color:var(--text);">
-                <input type="checkbox" id="showQR" checked onchange="update()"> Show QR code
+              <label class="option-row">
+                <div class="option-check">
+                  <input type="checkbox" id="showQr" checked onchange="update()">
+                  <div class="box"></div>
+                </div>
+                <span>Show QR Code</span>
               </label>
             </div>
           </div>
-        </div><!-- end sidebar-grid -->
+        </div>
+      </div><!-- end tab-design -->
 
-    </div><!-- end tab-design -->
+      <!-- ══ SETTINGS TAB ══ -->
+      <div id="tab-settings" style="display:none; flex-direction:column; gap:24px;">
+        <div class="section">
+          <div class="section-header" onclick="toggleSection('templates')">
+            <span class="section-title"><i class="ph ph-layout"></i> Industry Templates (Elite 8)</span>
+            <span class="section-toggle" id="toggle-templates">▼</span>
+          </div>
+          <div class="section-body" id="body-templates">
+            <div class="template-grid">
+              <div class="template-item" onclick="loadTemplate('agency', this)"><i class="ph ph-briefcase"></i> Creative Agency</div>
+              <div class="template-item" onclick="loadTemplate('legal', this)"><i class="ph ph-scales"></i> Legal Services</div>
+              <div class="template-item" onclick="loadTemplate('logistics', this)"><i class="ph ph-truck"></i> Freight & Logistics</div>
+              <div class="template-item" onclick="loadTemplate('freelance', this)"><i class="ph ph-user"></i> Master Consulting</div>
+              <div class="template-item" onclick="loadTemplate('product', this)"><i class="ph ph-package"></i> Product Sales</div>
+              <div class="template-item" onclick="loadTemplate('saas', this)"><i class="ph ph-cloud"></i> SaaS Subscription</div>
+              <div class="template-item" onclick="loadTemplate('estate', this)"><i class="ph ph-house"></i> Real Estate</div>
+              <div class="template-item" onclick="loadTemplate('auto', this)"><i class="ph ph-wrench"></i> Elite Automotive</div>
+            </div>
+          </div>
+        </div>
 
-    <!-- ══ SETTINGS TAB ══ -->
-    <div id="tab-settings" style="display:none; flex-direction:column; gap:24px;">
-        <div class="sidebar-grid">
-          <!-- QUICK ACTIONS -->
-          <div class="section">
-            <div class="section-title" style="margin-bottom:12px;"><i class="ph ph-lightning"></i> Quick Actions</div>
+        <div class="section">
+          <div class="section-header" onclick="toggleSection('actions')">
+            <span class="section-title"><i class="ph ph-lightning"></i> Quick Actions</span>
+            <span class="section-toggle" id="toggle-actions">▼</span>
+          </div>
+          <div class="section-body" id="body-actions">
             <div style="display:flex; flex-direction:column; gap:8px;">
               <button class="btn btn-ghost btn-sm" onclick="duplicateInvoice()"><i class="ph ph-copy"></i> Duplicate</button>
               <button class="btn btn-ghost btn-sm" onclick="clearAll()"><i class="ph ph-trash"></i> Clear All</button>
               <button class="btn btn-ghost btn-sm" onclick="loadSample()"><i class="ph ph-magic-wand"></i> Sample</button>
             </div>
           </div>
+        </div>
 
-          <!-- TEMPLATES -->
-          <div class="section">
-            <div class="section-title" style="margin-bottom:12px;"><i class="ph ph-layout"></i> Industry Templates</div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <button class="btn btn-ghost btn-sm" onclick="loadTemplate('agency')"><i class="ph ph-briefcase"></i> Creative Agency</button>
-              <button class="btn btn-ghost btn-sm" onclick="loadTemplate('legal')"><i class="ph ph-scales"></i> Legal Services</button>
-              <button class="btn btn-ghost btn-sm" onclick="loadTemplate('logistics')"><i class="ph ph-truck"></i> Logistics & Freight</button>
-              <button class="btn btn-ghost btn-sm" onclick="loadTemplate('freelance')"><i class="ph ph-user"></i> Consulting</button>
-              <button class="btn btn-ghost btn-sm" onclick="loadTemplate('product')"><i class="ph ph-package"></i> Product Sales</button>
+        <div class="section">
+          <div class="section-header" onclick="toggleSection('vault')">
+            <span class="section-title"><i class="ph ph-stack"></i> Agency Vault</span>
+            <span class="section-toggle" id="toggle-vault">▼</span>
+          </div>
+          <div class="section-body" id="body-vault">
+            <div id="vaultHistory" class="vault-history">
+              <p class="hint">No recent invoices found in this browser.</p>
             </div>
+            <button class="btn btn-ghost btn-sm" onclick="saveToVault()" style="width:100%; margin-top:12px; justify-content:center;">
+               <i class="ph ph-plus-circle"></i> Save Current to Vault
+            </button>
           </div>
         </div>
+      </div>
+      </div>
+    </div><!-- end sidebar -->
 
-        <hr class="divider">
-        
-        <!-- AGENCY VAULT (HISTORY) -->
-        <div class="section">
-          <div class="section-title" style="margin-bottom:12px;"><i class="ph ph-stack"></i> Agency Vault (Recents)</div>
-          <div id="vaultHistory" class="vault-history">
-            <p class="hint">No recent invoices found in this browser.</p>
-          </div>
-          <button class="btn btn-ghost btn-sm" onclick="saveToVault()" style="width:100%; margin-top:12px; justify-content:center;">
-             <i class="ph ph-plus-circle"></i> Save Current to Vault
-          </button>
+    <!-- ─── Preview Area ─── -->
+    <div class="preview-area" id="previewArea">
+      <div class="preview-toolbar">
+        <span class="preview-label">Live Preview</span>
+        <div class="preview-controls">
+          <button class="btn-icon" onclick="zoomOut()" title="Zoom Out">−</button>
+          <span class="zoom-display" id="zoomDisplay">80%</span>
+          <button class="btn-icon" onclick="zoomIn()" title="Zoom In">+</button>
+          <button class="btn-icon" onclick="resetZoom()" title="Fit to screen">⊡</button>
+          <button class="btn-icon share-btn-preview" onclick="shareApp()" title="Share InvoiceForge">🔗</button>
         </div>
-
-        <hr class="divider">
-        <div class="section">
-          <div class="section-title" style="margin-bottom:8px;"><i class="ph ph-info"></i> Studio v1.5.0</div>
-          <p class="hint">Professional Immersive Workspace · Local Persistence Enabled.</p>
+      </div>
+      <div class="invoice-wrap" id="invoiceWrap">
+        <div class="invoice theme-noir" id="invoice">
+          <!-- dynamically rendered -->
         </div>
-    </div>
-
-  </div><!-- end sidebar -->
-
-  <!-- ─── Preview Area ─── -->
-  <div class="preview-area" id="previewArea">
-    <div class="preview-toolbar">
-      <span class="preview-label">Live Preview</span>
-      <div class="preview-controls">
-        <button class="btn-icon" onclick="zoomOut()" title="Zoom Out">−</button>
-        <span class="zoom-display" id="zoomDisplay">80%</span>
-        <button class="btn-icon" onclick="zoomIn()" title="Zoom In">+</button>
-        <button class="btn-icon" onclick="resetZoom()" title="Fit to screen">⊡</button>
-        <button class="btn-icon share-btn-preview" onclick="shareApp()" title="Share InvoiceForge">🔗</button>
       </div>
     </div>
-    <div class="invoice-wrap" id="invoiceWrap">
-      <div class="invoice theme-noir" id="invoice">
-        <!-- dynamically rendered -->
-      </div>
-    </div>
-  </div>
 
   </div><!-- end app-layout -->
 
@@ -982,10 +844,28 @@
     // ─── Sections ───
     function toggleSection(id) {
       const body = document.getElementById('body-' + id);
-      const toggle = document.getElementById('toggle-' + id);
-      const collapsed = body.classList.toggle('collapsed');
-      toggle.textContent = collapsed ? '▼' : '▲';
-      toggle.classList.toggle('open', !collapsed);
+      if (!body) return;
+      const section = body.parentElement;
+      const isCollapsed = section.classList.toggle('collapsed');
+      
+      if (typeof gsap !== 'undefined') {
+        if (isCollapsed) {
+          gsap.to(body, { height: 0, opacity: 0, duration: 0.4, ease: 'power2.inOut', onComplete: () => { body.style.display = 'none'; } });
+        } else {
+          body.style.display = 'block';
+          gsap.fromTo(body, { height: 0, opacity: 0 }, { height: 'auto', opacity: 1, duration: 0.5, ease: 'power2.out' });
+        }
+      } else {
+        body.style.display = isCollapsed ? 'none' : 'block';
+      }
+    }
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function scrollToPreview() {
+      const p = document.getElementById('previewArea');
+      if (p) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // ─── Line Items ───
@@ -1153,12 +1033,20 @@
     }
 
     // ─── Themes ───
-    function setTheme(t) {
-      state.theme = t;
-      document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
-      document.getElementById('swatch-' + t)?.classList.add('active');
-      update();
-    }
+    function setTheme(theme) {
+      const inv = document.getElementById('invoice');
+      inv.className = 'invoice theme-' + theme;
+      
+      // Update UI active state
+      document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+      const activeCard = document.getElementById('swatch-' + theme);
+      if (activeCard) activeCard.classList.add('active');
+      
+      toast('🎨', `Theme changed to ${theme.charAt(0).toUpperCase() + theme.slice(1)}`);
+      
+      // Visual feedback
+      gsap.fromTo(inv, { opacity: 0.8, scale: 0.98 }, { opacity: 1, scale: 1, duration: 0.4 });
+    };
 
     // ─── Magic Copy ───
     async function copyToClipboard(text) {
@@ -1593,58 +1481,109 @@
       clearAll();
       const templates = {
         agency: {
-          subject: 'Digital Transformation & Brand Identity',
+          from: { name: 'Noir Creative Agency', email: 'hello@noir-studio.agency', address: '12-14 Media Works Plaza\nLondon, UK' },
+          to: { name: 'Ethereal Logistics Ltd', email: 'finance@ethereal.co', address: '99 Cloud Way\nStockholm, Sweden' },
+          subject: 'Global Brand Identity & Interactive Experience',
           items: [
-            { id: 1, desc: 'Strategy & Brand Audit', subdesc: 'Workshop & Research phase', qty: 1, rate: 250000 },
+            { id: 1, desc: 'Brand Strategy & Audit', subdesc: 'Workshop & deep research phase', qty: 1, rate: 250000 },
             { id: 2, desc: 'Visual Identity System', subdesc: 'Logo, Typography, Guidelines', qty: 1, rate: 450000 },
-            { id: 3, desc: 'Web Experience Design', subdesc: '10 custom page layouts', qty: 1, rate: 850000 },
-            { id: 4, desc: 'Launch Support', subdesc: 'Hosting setup & Handover', qty: 1, rate: 120000 },
+            { id: 3, desc: 'Web Experience Design', subdesc: '12 custom page layouts', qty: 1, rate: 850000 },
           ],
-          notes: 'Milestone 1 (50% upfront) and Milestone 2 (50% on completion).',
-        },
-        freelance: {
-          subject: 'Consulting Services',
-          items: [
-            { id: 1, desc: 'Strategy Consultation', subdesc: 'Hourly consulting', qty: 10, rate: 25000 },
-            { id: 2, desc: 'Project Management', subdesc: 'Coordination & reporting', qty: 1, rate: 50000 },
-          ],
-          notes: 'Consulting invoice. Payment within 7 days.',
-        },
-        product: {
-          subject: 'Stock Fulfillment - Batch #PROD-092',
-          items: [
-            { id: 1, desc: 'Premium Item A (Box of 50)', subdesc: 'SKU: PR-A-B50', qty: 5, rate: 45000 },
-            { id: 2, desc: 'Standard Item B', subdesc: 'SKU: PR-B-UNIT', qty: 200, rate: 1200 },
-          ],
-          notes: 'Items delivered in good condition. No refunds after 48 hours.',
+          notes: 'Milestone 1 (50% Deposit) - Non-refundable.',
         },
         legal: {
-          subject: 'Legal Representation & Advisory',
+          from: { name: 'Sterling & Co. Legal', email: 'billing@sterling.law', address: '88 Legal Tower\nNew York, NY' },
+          to: { name: 'Apex Capital Holdings', email: 'legal@apex-cap.com', address: '1 Corporate Way\nDelaware, US' },
+          subject: 'Corporate Advisory & Filing - Q1 2026',
           items: [
-            { id: 1, desc: 'Professional Hourly Fee', subdesc: 'Senior Partner rate', qty: 12, rate: 45000 },
-            { id: 2, desc: 'Document Review / Filing', subdesc: 'Corporate filing fees included', qty: 1, rate: 150000 },
-            { id: 3, desc: 'Retainer Deposit', subdesc: 'Credited to next billing cycle', qty: 1, rate: 200000 },
+            { id: 1, desc: 'Senior Partner Hourly Fee', subdesc: 'Corporate consultation', qty: 8, rate: 65000 },
+            { id: 2, desc: 'Filing & Processing Fees', subdesc: 'SEC compliance documents', qty: 1, rate: 125000 },
+            { id: 3, desc: 'Retainer Credit', subdesc: 'Applied to next cycle', qty: 1, rate: 200000 },
           ],
-          notes: 'Privileged and confidential. Please remit payment via bank transfer.',
+          notes: 'Standard legal fees. Remit within 14 days.',
         },
         logistics: {
-          subject: 'Logistics & Waybill #LG-4491',
+          from: { name: 'SwiftLink Global Freight', email: 'ops@swiftlink.com', address: 'Port Area C1\nDubai, UAE' },
+          to: { name: 'Vertex Electronics', email: 'import@vertex.tech', address: 'Industrial Zone 4\nLagos, Nigeria' },
+          subject: 'Air Freight Waybill #SLG-9901-FX',
           items: [
-            { id: 1, desc: 'Freight Charge (by weight)', subdesc: '240kg @ ₦500/kg', qty: 240, rate: 500 },
-            { id: 2, desc: 'Clearing & Documentation', subdesc: 'Port handling fees', qty: 1, rate: 85000 },
-            { id: 3, desc: 'Last Mile Delivery', subdesc: 'Inner city transit', qty: 1, rate: 15000 },
+            { id: 1, desc: 'Heavy Freight Charge', subdesc: '450kg Air Cargo (Priority)', qty: 450, rate: 1100 },
+            { id: 2, desc: 'Customs Clearing', subdesc: 'Documentation & handling', qty: 1, rate: 75000 },
+            { id: 3, desc: 'Last Mile Transit', subdesc: 'Warehouse to Site delivery', qty: 1, rate: 15000 },
           ],
-          notes: 'Invoices must be cleared before cargo release.',
+          notes: 'Proof of delivery required for cargo release.',
+        },
+        freelance: {
+          from: { name: 'Alex Rivers Consulting', email: 'hi@alexrivers.cat', address: 'Digital Nomad - Remote' },
+          to: { name: 'Startup Hub', email: 'partners@startuphub.com', address: 'Tech Lane, SF' },
+          subject: 'Growth Strategy Consulting',
+          items: [
+            { id: 1, desc: 'Weekly Consulting Session', subdesc: 'Marketing strategy', qty: 4, rate: 35000 },
+            { id: 2, desc: 'Ad Campaign Setup', subdesc: 'Meta/Google ads', qty: 1, rate: 50000 },
+          ],
+          notes: 'Freelance consulting. Net-7 payment.',
+        },
+        product: {
+          from: { name: 'TechWare Fulfillments', email: 'orders@techware.com', address: 'Depot 9, Zone B' },
+          to: { name: 'Retail Solutions', email: 'stock@retail-sol.com', address: 'Main St Mall, NY' },
+          subject: 'Component Fulfillment - Batch #PROD-77',
+          items: [
+            { id: 1, desc: 'Mechanical Keyboards (Unit)', subdesc: 'Blue Switches - RGB', qty: 25, rate: 12000 },
+            { id: 2, desc: 'Pudding Keycap Sets', subdesc: 'Double-shot PBT', qty: 50, rate: 1500 },
+          ],
+          notes: 'Bulk product order. FOB Shipping Point.',
+        },
+        saas: {
+          from: { name: 'CloudScale AI', email: 'billing@cloudscale.io', address: 'Cloud Park, Silicon Valley' },
+          to: { name: 'FastTrack Startups', email: 'finance@fasttrack.co', address: 'Innovation Tower, Austin' },
+          subject: 'AI Compute Cluster Subscription - Monthly',
+          items: [
+            { id: 1, desc: 'Growth Tier AI API Access', subdesc: 'Unlimited endpoint calls', qty: 1, rate: 299000 },
+            { id: 2, desc: 'Private Vector Database', subdesc: 'Managed 50GB storage', qty: 1, rate: 50000 },
+          ],
+          notes: 'Auto-renewal on 1st of each month.',
+        },
+        estate: {
+          from: { name: 'Prime Estate Partners', email: 'admin@prime-estate.com', address: 'Lux Tower, Lagos' },
+          to: { name: 'Apex Logistics Ltd', email: 'rentals@apex.tech', address: 'Portside Warehouse' },
+          subject: 'Monthly Rental Invoice - Facility #C-2',
+          items: [
+            { id: 1, desc: 'Warehouse Facility Rent', subdesc: '5,000 sq ft - Monthly', qty: 1, rate: 1200000 },
+            { id: 2, desc: 'Maintenance Fee', subdesc: 'Security, Power, Sanitation', qty: 1, rate: 150000 },
+          ],
+          notes: 'Late payment attracts 5% penalty after 7 days.',
+        },
+        auto: {
+          from: { name: 'Redline Performance', email: 'service@redline.auto', address: 'Garage 8, Race Track' },
+          to: { name: 'Mark Evans', email: 'mark@evans.me', address: 'Suburban Lane, NY' },
+          subject: 'Vehicle Restoration & Performance Tune',
+          items: [
+            { id: 1, desc: 'Precision Engine Mapping', subdesc: 'Stage 2 ECU Tuning', qty: 1, rate: 450000 },
+            { id: 2, desc: 'Exhaust System Install', subdesc: 'Titanium Cat-back', qty: 1, rate: 850000 },
+            { id: 3, desc: 'Labor - Master Technician', subdesc: '12 hours specialized work', qty: 12, rate: 25000 },
+          ],
+          notes: 'Warranty valid for 12 months or 10,000km.',
         }
       };
+      
       const t = templates[type];
       if (!t) return;
 
+      // Fill Business Data (The Deep Change)
+      if (t.from) {
+        document.getElementById('fromName').value = t.from.name || '';
+        document.getElementById('fromEmail').value = t.from.email || '';
+        document.getElementById('fromAddress').value = t.from.address || '';
+      }
+      if (t.to) {
+        document.getElementById('toName').value = t.to.name || '';
+        document.getElementById('toEmail').value = t.to.email || '';
+        document.getElementById('toAddress').value = t.to.address || '';
+      }
+      
       // Fill metadata
       if (document.getElementById('invSubject')) document.getElementById('invSubject').value = t.subject || '';
       if (document.getElementById('notes')) document.getElementById('notes').value = t.notes || '';
-      if (t.tax && document.getElementById('taxPct')) document.getElementById('taxPct').value = t.tax;
-      if (t.shipping && document.getElementById('shipping')) document.getElementById('shipping').value = t.shipping;
       
       // Injection with deep copy
       state.items = JSON.parse(JSON.stringify(t.items));
@@ -1652,14 +1591,20 @@
       renderItems(); 
       update();
 
-      // Robust Tab Switch
-      const contentTab = document.querySelectorAll('.tab')[0];
-      if (contentTab) switchTab('content', contentTab);
-      
-      toast('📋', `${type.charAt(0).toUpperCase() + type.slice(1)} template loaded!`);
+      // Highlight Active Template
+      document.querySelectorAll('.template-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('onclick')?.includes(`'${type}'`)) {
+          item.classList.add('active');
+        }
+      });
+
+      toast('📋', `${type.charAt(0).toUpperCase() + type.slice(1)} Studio Template Loaded!`);
       
       // Visual confirmation pulse
-      gsap.fromTo('.sidebar-grid', { opacity: 0.5 }, { opacity: 1, duration: 0.5 });
+      if (typeof gsap !== 'undefined') {
+        gsap.fromTo('.sidebar-inner', { opacity: 0.5 }, { opacity: 1, duration: 0.5 });
+      }
     }
 
     // Listen for window resize
@@ -1731,8 +1676,8 @@
         focusBtn.innerHTML = '<i class="ph ph-mask-happy"></i> Exit Focus';
         focusBtn.style.color = 'var(--accent)';
         
-        // Hide UI
-        gsap.to('.sidebar', { x: -800, opacity: 0, duration: 0.8, ease: 'power4.inOut' });
+        // Hide UI (Vertical Slide Up)
+        gsap.to('.sidebar', { y: -1000, opacity: 0, duration: 0.8, ease: 'power4.inOut' });
         gsap.to(header, { y: -100, opacity: 0, duration: 0.6, ease: 'power4.in' });
         
         // Show Floating Exit
@@ -1749,8 +1694,8 @@
         focusBtn.innerHTML = '<i class="ph ph-sparkle"></i> Focus';
         focusBtn.style.color = '';
         
-        // Show UI
-        gsap.to('.sidebar', { x: 0, opacity: 1, duration: 0.8, ease: 'power4.out', delay: 0.1 });
+        // Show UI (Vertical Slide Down)
+        gsap.to('.sidebar', { y: 0, opacity: 1, duration: 0.8, ease: 'power4.out', delay: 0.1 });
         gsap.to(header, { y: 0, opacity: 1, duration: 0.6, ease: 'power4.out', delay: 0.2 });
         
         // Hide Floating Exit
@@ -1905,5 +1850,9 @@
     }
 
   </script>
+  <div class="nav-controls">
+    <button class="nav-btn" onclick="scrollToTop()" title="Go to Workstation"><i class="ph ph-arrow-up"></i></button>
+    <button class="nav-btn" onclick="scrollToPreview()" title="Go to Preview"><i class="ph ph-arrow-down"></i></button>
+  </div>
 </body>
 </html>
